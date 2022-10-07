@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react';
+import AuthContext from '../store/authContext';
 import axios from 'axios'
 
 const Auth = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [register, setRegister] = useState(true)
+
+    const authCtx = useContext(AuthContext);
 
     const submitHandler = e => {
         e.preventDefault()
@@ -17,14 +20,16 @@ const Auth = () => {
             axios
                 .post('https://socialmtn.devmountain.com/register', body)
                 .then((res) => {
-                    console.log(res.data)
+                    console.log(res.data);
+                    authCtx.login(res.data.token, res.data.exp, res.data.userId);
                 })
                 .catch(err => console.log(err))
         } else {
             axios
                 .post('https://socialmtn.devmountain.com/login', body)
                 .then((res) => {
-                    console.log(res.data)
+                    console.log(res.data);
+                    authCtx.login(res.data.token, res.data.exp, res.data.userId);
                 })
                 .catch(err => {
                     console.log(err);
@@ -37,7 +42,7 @@ const Auth = () => {
         console.log(username)
         console.log(password)
         console.log(register)
-    }
+    };
 
     const usernameHandler = (event) => {
         setUsername(event.target.value);
