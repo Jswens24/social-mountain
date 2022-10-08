@@ -1,86 +1,66 @@
-import { useState, useContext } from 'react';
-import AuthContext from '../store/authContext';
+import { useState, useContext } from 'react'
 import axios from 'axios'
 
+import AuthContext from '../store/authContext'
+
 const Auth = () => {
+    const [register, setRegister] = useState(true)
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [register, setRegister] = useState(true)
+    const [message, setMessage] = useState('')
+    const [display, setDisplay] = useState('none')
 
-    const authCtx = useContext(AuthContext);
+    const authCtx = useContext(AuthContext)
 
     const submitHandler = e => {
         e.preventDefault()
+
+        setDisplay('none')
+
         const body = {
             username,
             password
-        };
-
-        if (register) {
-            axios
-                .post('https://socialmtn.devmountain.com/register', body)
-                .then((res) => {
-                    console.log(res.data);
-                    authCtx.login(res.data.token, res.data.exp, res.data.userId);
-                })
-                .catch(err => console.log(err))
-        } else {
-            axios
-                .post('https://socialmtn.devmountain.com/login', body)
-                .then((res) => {
-                    console.log(res.data);
-                    authCtx.login(res.data.token, res.data.exp, res.data.userId);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setUsername('');
-                    setPassword('');
-                })
         }
 
-        console.log('submitHandler called')
-        console.log(username)
-        console.log(password)
-        console.log(register)
-    };
+        const url = 'https://socialmtn.devmountain.com'
 
-    const usernameHandler = (event) => {
-        setUsername(event.target.value);
-    };
-
-    const passwordHandler = (event) => {
-        setPassword(event.target.value);
-    };
-
-    const buttonClickHandler = () => {
-        setRegister(!register);
-    };
-
-
+        axios.post(register ? `${url}/register` : `${url}/login`, body)
+            .then((res) => {
+                console.log('AFTER AUTH', res.data)
+                authCtx.login(res.data.token, res.data.exp, res.data.userId)
+            })
+            .catch(err => {
+                setMessage(err.response.data)
+                setDisplay('block')
+                setPassword('')
+                setUsername('')
+            })
+    }
 
     return (
         <main>
             <h1>Welcome!</h1>
             <form className='form auth-form' onSubmit={submitHandler}>
                 <input
-                    onChange={usernameHandler}
-                    className='form-input'
                     type='text'
-                    placeholder='enter username'
+                    placeholder='username'
                     value={username}
-                />
+                    onChange={e => setUsername(e.target.value)}
+                    className='form-input' />
                 <input
-                    onChange={passwordHandler}
-                    className='form-input'
                     type='password'
-                    placeholder='enter password'
+                    placeholder='password'
                     value={password}
-                />
+                    onChange={e => setPassword(e.target.value)}
+                    className='form-input' />
                 <button className='form-btn'>
                     {register ? 'Sign Up' : 'Login'}
                 </button>
             </form>
-            <button onClick={buttonClickHandler} className='form-btn'>Need to {register ? 'Login' : 'Sign Up'}?</button>
+            <p style={{ display: display }} className='auth-msg'>{message}</p>
+            <button className='form-btn' onClick={() => setRegister(!register)}>
+                Need to {register ? 'Login' : 'Sign Up'}?
+            </button>
         </main>
     )
 }
